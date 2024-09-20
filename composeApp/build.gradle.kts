@@ -1,4 +1,4 @@
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
@@ -51,6 +51,7 @@ kotlin {
             implementation(libs.ktor.client.contentnegotiation)
             implementation(libs.androidx.navigation.compose)
             implementation(libs.androidx.lifecycle.viewmodel.compose)
+            implementation(libs.android.kvault)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
