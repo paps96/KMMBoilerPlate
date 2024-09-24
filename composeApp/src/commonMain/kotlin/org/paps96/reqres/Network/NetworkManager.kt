@@ -1,5 +1,6 @@
 package org.paps96.reqres.Network
 
+import com.example.example.TracksData
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.ClientRequestException
@@ -34,6 +35,25 @@ class NetworkManager(
         } catch (e: Exception) {
             println("Error general: ${e.message}")
             LoginResponse(error = "Error", id = null, token = null)
+        }
+    }
+
+    suspend fun fetchTracks(): TracksData {
+        return try {
+            client.get("http://apk.ctn.smapps.mx:9582/contenedor/feedCM/mx/feedCM_mx.json")
+                .body<TracksData>()
+        } catch (e: ClientRequestException) {
+            println("Error en la solicitud: ${e.response.status}")
+            TracksData()
+        } catch (e: ServerResponseException) {
+            println("Error del servidor: ${e.response.status}")
+            TracksData()
+        } catch (e: RedirectResponseException) {
+            println("Redirección no exitosa: ${e.response.status}")
+            TracksData()
+        } catch (e: Exception) {
+            println("Error general: ${e.message}")
+            TracksData()
         }
     }
 }

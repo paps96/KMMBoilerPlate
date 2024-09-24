@@ -1,37 +1,43 @@
 package org.paps96.reqres
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import org.jetbrains.compose.resources.painterResource
+import io.ktor.client.HttpClient
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.serialization.kotlinx.json.json
+import kotlinx.serialization.json.Json
 import org.jetbrains.compose.ui.tooling.preview.Preview
-
-import reqres.composeapp.generated.resources.Res
-import reqres.composeapp.generated.resources.compose_multiplatform
+import org.paps96.reqres.MemoryManager.SecureStorage
+import org.paps96.reqres.Network.NetworkManager
+import org.paps96.reqres.ViewModels.LoginViewModel
+import org.paps96.reqres.ViewModels.WelcomeScreenViewModel
+import org.paps96.reqres.Views.LoginScreen
+import org.paps96.reqres.Views.WelcomeScreen
 
 @Composable
 @Preview
-fun App() {
-    MaterialTheme {
-        var showContent by remember { mutableStateOf(false) }
-        Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-            Button(onClick = { showContent = !showContent }) {
-                Text("Click me!")
-            }
-            AnimatedVisibility(showContent) {
-                val greeting = remember { Greeting().greet() }
-                Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Image(painterResource(Res.drawable.compose_multiplatform), null)
-                    Text("Compose: $greeting")
-                }
+fun App(secureStorage: SecureStorage) {
+    var loggedIn by remember { mutableStateOf(secureStorage.existsObject("password")) }
+    val client = remember {
+        HttpClient {
+            install(ContentNegotiation) {
+                json(Json {
+                    ignoreUnknownKeys = true
+                })
             }
         }
+    }
+
+    if (loggedIn) {
+        val welcomeScreenViewModel = WelcomeScreenViewModel(NetworkManager(client))
+        WelcomeScreen(welcomeScreenViewModel)
+    } else {
+        val loginViewModel = LoginViewModel()
+        LoginScreen(
+            loginViewModel,
+            onLoginSuccess = {
+                secureStorage.set("user", "yes")
+                loggedIn = true
+            }
+        )
     }
 }
